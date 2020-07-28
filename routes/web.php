@@ -20,5 +20,4 @@ $router->get('/test', function () use ($router) {
 });
 
 $router->post('/login', array('uses' => 'UserController@getOTP'));
-
-$router->get('/asd', array('uses' => 'UserController@test'));
+$router->post('/verify', array('uses' => 'UserController@verificationOTP'));
