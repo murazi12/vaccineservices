@@ -40,7 +40,18 @@ class UserController extends Controller
     public function verificationOTP(Request $request)
     {
         $header = apache_request_headers();
-        if(!isset($header['token']) || empty($header['token']))
-        return $header['token'];
+        if(!isset($header['token']) || empty($header['token'])) {
+            return parent::response(400, 'Bad Request', 'Token is required !');
+        }
+        else if(!$request->has('otp')) {
+            return parent::response(400, 'Bad Request', 'OTP is required !');
+        }
+        
+        $data = app('db')->select("SELECT * FROM tbl_auth WHERE auth_OTP = '".$request->otp."' AND auth_token = '".$header['token']."' ");
+        if(empty($data)) {
+            return parent::response('200', 'success', 'Token or OTP is not valid !', array('phno' => '', 'verified' => false));
+        }
+
+        return parent::response('200', 'success', '', array('phno' => $data[0]->auth_phno, 'verified' => true));
     }
 }
