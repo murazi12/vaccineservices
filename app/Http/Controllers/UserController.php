@@ -2,6 +2,7 @@
 namespace App\Http\Controllers;
 
 use App\User;
+// use DB;
 use Illuminate\Http\Request;
 
 class UserController extends Controller
@@ -25,5 +26,10 @@ class UserController extends Controller
             )
         );
         return $res;
+    }
+
+    public function test(Request $request)
+    {
+        $tst = app('db')->select("SELECT * FROM tbl_auth");
     }
 }
