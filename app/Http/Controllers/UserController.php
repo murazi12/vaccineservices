@@ -30,6 +30,7 @@ class UserController extends Controller
 
     public function test(Request $request)
     {
-        $tst = app('db')->select("SELECT * FROM tbl_auth");
+        return 'aaa';
+        // $tst = app('db')->select("SELECT * FROM tbl_auth");
     }
 }
