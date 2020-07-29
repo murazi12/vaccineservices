@@ -22,7 +22,8 @@ class UserController extends Controller
         $key = str_random(1).''.md5(date('d-m-Y H:i:s')).''.str_random(1);
 
         $check = app('db')->select("SELECT COUNT(*) AS data FROM tbl_auth WHERE auth_phno = '".$request->phno."'");
-
+        return $check;
+    /*
         if($check[0]->data == 0) {
             $row = app('db')->insert("INSERT INTO tbl_auth (auth_phno, auth_token, auth_otp, auth_crdt) VALUES (?, ?, ?, ?)", array($request->phno, $key, $otp, date('Y-m-d H:i:s')));
         }
@@ -36,6 +37,7 @@ class UserController extends Controller
         );
 
         return parent::response(200,'success','',$data);
+        */
     }
 
     public function verificationOTP(Request $request)
