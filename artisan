@@ -6,7 +6,7 @@ use Symfony\Component\Console\Output\ConsoleOutput;
 
 /*
 |--------------------------------------------------------------------------
-| Create The Application
+| Create The Application | New Branch
 |--------------------------------------------------------------------------
 |
 | First we need to get an application instance. This creates an instance
