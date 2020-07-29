@@ -23,11 +23,8 @@ class UserController extends Controller
 
         $check = app('db')->select("SELECT COUNT(*) AS data FROM tbl_auth WHERE auth_phno = '".$request->phno."'");
         if($check[0]->data == 0) {
-            $sql = "INSERT INTO tbl_auth (auth_phno, auth_token, auth_otp, auth_crdt) VALUES ('".$request->phno.", '".$key."', '".$otp."', '".date('Y-m-d H:i:s')."')";
-            // $row = app('db')->insert("INSERT INTO tbl_auth (auth_phno, auth_token, auth_otp, auth_crdt) VALUES (?, ?, ?, ?)", array($request->phno, $key, $otp, date('Y-m-d H:i:s')));
-            return $sql;
+            $row = app('db')->insert("INSERT INTO tbl_auth (auth_phno, auth_token, auth_otp, auth_crdt) VALUES (?, ?, ?, ?)", array($request->phno, $key, $otp, date('Y-m-d H:i:s')));
         }
-        /*
         else {
             $row = app('db')->update("UPDATE tbl_auth SET auth_token = '".$key."', auth_otp = '".$otp."', auth_chdt = '".date('Y-m-d H:i:s')."' WHERE auth_phno = ?", array($request->phno));
         }
@@ -38,7 +35,6 @@ class UserController extends Controller
         );
 
         return parent::response(200,'success','',$data);
-        */
     }
 
     public function verificationOTP(Request $request)
