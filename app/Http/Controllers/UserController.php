@@ -47,7 +47,7 @@ class UserController extends Controller
             return parent::response(400, 'Bad Request', 'OTP is required !');
         }
         
-        $data = app('db')->select("SELECT * FROM tbl_auth WHERE auth_OTP = '".$request->otp."' AND auth_token = '".$header['token']."' ");
+        $data = app('db')->select("SELECT * FROM tbl_auth WHERE auth_OTP = '".$request->otp."' AND auth_token = '".$header['Token']."' ");
         if(empty($data)) {
             return parent::response('200', 'success', 'Token or OTP is not valid !', array('phno' => '', 'verified' => false));
         }
