@@ -97,4 +97,10 @@ $app->router->group([
     require __DIR__.'/../routes/web.php';
 });
 
+$app->configure('mail');
+$app->configure('services');
+$app->register(Sichikawa\LaravelSendgridDriver\MailServiceProvider::class);
+
+unset($app->availableBindings['mailer']);
+
 return $app;
