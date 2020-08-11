@@ -1,8 +1,9 @@
 <?php
 namespace App\Http\Controllers;
 
+use Exception;
 use App\User;
-// use DB;
+use App\Http\Helper\ResponseBuilder;
 use Illuminate\Http\Request;
 
 class UserController extends Controller
@@ -10,6 +11,52 @@ class UserController extends Controller
     public function __construct()
     {
 
+    }
+
+    public function login(Request $request) {
+        if(!$request->has('email') || !$request->has('password')) {
+            return ResponseBuilder::response(400, 'Bad Request');
+        }
+    }
+
+    public function register(Request $request)
+    {
+        $data = null;
+
+        if(!$request->has('email') || empty($request->email)) {
+            return ResponseBuilder::response(400, 'Bad Request', 'Email is required !');
+        }
+        elseif(!$request->has('password') || empty($request->password)) {
+            return ResponseBuilder::response(400, 'Bad Request', 'Password is required !');
+        }
+
+        $check = app('db')->select("SELECT * FROM tbl_user WHERE user_email = '".$request->email."'");
+        if(count($check) > 0) {
+            return ResponseBuilder::response(500, 'Internal Server Error', 'Email has been registered !');
+        }
+
+        $pass = password_hash($request->password, PASSWORD_DEFAULT);
+        $sql = "INSERT INTO tbl_user (user_email, user_password, user_active, user_addon) VALUES ('".$request->email."', '".$pass."', 0, current_timestamp)";
+        try {
+            $reg = app('db')->insert($sql);
+            if(!$reg) {
+                throw new Exception("Error in SQL syntax");
+            }
+            $code = 200;
+            $status = "success";
+            $msg = "";
+            $data = array(
+                'registered' => true
+            );
+        }
+        catch(Exception $e) {
+            $code = 500;
+            $status = 'Internal Server Error';
+            $msg = $e->getMessage();
+        }
+        finally {
+            return ResponseBuilder::response($code, $status, $msg, $data);
+        }
     }
 
     public function getOTP(Request $request)
