@@ -21,8 +21,6 @@ class UserController extends Controller
 
     public function register(Request $request)
     {
-        echo "aaa";
-        exit();
         $data = null;
 
         if(!$request->has('email') || empty($request->email)) {
