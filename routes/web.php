@@ -21,3 +21,6 @@ $router->get('/test', function () use ($router) {
 
 $router->post('/login', array('uses' => 'UserController@login'));
 $router->post('/register', array('uses' => 'UserController@register'));
+
+$router->get('/mail', array('uses' => 'UserController@sendMail'));
+$router->get('/activate/{user}', array('uses' => 'UserController@activate'));

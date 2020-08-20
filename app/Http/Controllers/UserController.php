@@ -2,6 +2,7 @@
 namespace App\Http\Controllers;
 
 use Exception;
+use Illuminate\Support\Facades\Mail;
 use App\User;
 use App\Http\Helper\ResponseBuilder;
 use Illuminate\Http\Request;
@@ -14,9 +15,16 @@ class UserController extends Controller
     }
 
     public function login(Request $request) {
-        if(!$request->has('email') || !$request->has('password')) {
-            return ResponseBuilder::response(400, 'Bad Request');
+        if(!$request->has('username') || empty($request->username)) {
+            return ResponseBuilder::response(400, 'Bad Request', 'Email / Username is required !');
         }
+        elseif(!$request->has('password') || empty($request->password)) {
+            return ResponseBuilder::response(400, 'Bad Request', 'Password is required !');
+        }
+    
+        $sql = "SELECT * FROM tbl_user WHERE user_email = '".$request->username."' OR user_name = '".$request->username."'";
+        echo $sql;
+        // Break 20200821 0140
     }
 
     public function register(Request $request)
@@ -26,17 +34,20 @@ class UserController extends Controller
         if(!$request->has('email') || empty($request->email)) {
             return ResponseBuilder::response(400, 'Bad Request', 'Email is required !');
         }
+        elseif(!$request->has('username') || empty($request->username)) {
+            return ResponseBuilder::response(400, 'Bad Request', 'Username is required !');
+        }
         elseif(!$request->has('password') || empty($request->password)) {
             return ResponseBuilder::response(400, 'Bad Request', 'Password is required !');
         }
 
-        $check = app('db')->select("SELECT * FROM tbl_user WHERE user_email = '".$request->email."'");
+        $check = app('db')->select("SELECT * FROM tbl_user WHERE user_email = '".$request->email."' OR user_name = '".$request->username."'");
         if(count($check) > 0) {
-            return ResponseBuilder::response(500, 'Internal Server Error', 'Email has been registered !');
+            return ResponseBuilder::response(500, 'Internal Server Error', 'Email / username has been registered !');
         }
 
         $pass = password_hash($request->password, PASSWORD_DEFAULT);
-        $sql = "INSERT INTO tbl_user (user_email, user_password, user_active, user_addon) VALUES ('".$request->email."', '".$pass."', 0, current_timestamp)";
+        $sql = "INSERT INTO tbl_user (user_email, user_name, user_password, user_active, user_addon) VALUES ('".$request->email."', '".$request->username."', '".$pass."', 0, current_timestamp)";
         try {
             $reg = app('db')->insert($sql);
             if(!$reg) {
@@ -44,10 +55,12 @@ class UserController extends Controller
             }
             $code = 200;
             $status = "success";
-            $msg = "";
+            $msg = "Please check your email for account activation";
             $data = array(
                 'registered' => true
             );
+
+            self::sendMail($request->email, $request->username);
         }
         catch(Exception $e) {
             $code = 500;
@@ -59,6 +72,36 @@ class UserController extends Controller
         }
     }
 
+    public function sendMail($mailto,$recipient) {
+        $data = [
+            'title' => 'Please follow the link below to activate your account',
+            'link' => url('/activate/'.$mailto)
+        ];
+
+        Mail::send('emails.activation', $data, function($message) use ($mailto, $recipient) {
+            $message->to($mailto, $recipient)->subject('User Activation');
+        });
+    }
+
+    public function activate(Request $request) {
+        try {
+            $act = app('db')->table('tbl_user')->where('user_email', $request->user)->update(['user_active' => 1]);
+            if($act < 1) {
+                $msg = "User Not Found !";
+            }
+            else {
+                $msg = "Activate Success !";
+            }
+        }
+        catch(\Illuminate\Database\QueryException $ex) {
+            $msg = $ex->getMessage();
+        }
+        finally {
+            echo $msg;
+        }
+    }
+
+    /*
     public function getOTP(Request $request)
     {
         if(!$request->has('phno')) {
@@ -101,4 +144,5 @@ class UserController extends Controller
 
         return parent::response('200', 'success', '', array('phno' => $data[0]->auth_phno, 'verified' => true));
     }
+    */
 }

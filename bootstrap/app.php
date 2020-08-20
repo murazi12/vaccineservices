@@ -75,7 +75,7 @@ $app->singleton(
 | totally optional, so you are not required to uncomment this line.
 |
 */
-
+$app->register(\Illuminate\Mail\MailServiceProvider::class);
 // $app->register(App\Providers\AppServiceProvider::class);
 // $app->register(App\Providers\AuthServiceProvider::class);
 // $app->register(App\Providers\EventServiceProvider::class);
@@ -97,10 +97,7 @@ $app->router->group([
     require __DIR__.'/../routes/web.php';
 });
 
-$app->configure('mail');
 $app->configure('services');
-$app->register(Sichikawa\LaravelSendgridDriver\MailServiceProvider::class);
-
-unset($app->availableBindings['mailer']);
+$app->configure('mail');
 
 return $app;
