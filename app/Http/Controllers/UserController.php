@@ -23,7 +23,7 @@ class UserController extends Controller
         }
 
         $username = strtolower($request->username);
-        $sql = "SELECT * FROM tbl_user WHERE user_email = '".$username."' OR user_name = '".$username."'";
+        $sql = "SELECT * FROM tbl_user WHERE user_active = 1 AND (user_email = '".$username."' OR user_name = '".$username."')";
         $row = app('db')->select($sql);
 
         if(empty($row)) {
@@ -102,9 +102,10 @@ class UserController extends Controller
     }
 
     public function sendMail($mailto,$recipient) {
+        $param = responseBuilder::ssl_crypt($mailto, 1);
         $data = [
             'title' => 'Please follow the link below to activate your account',
-            'link' => url('/activate/'.$mailto)
+            'link' => url('/activate?usr='.$param)
         ];
 
         Mail::send('emails.activation', $data, function($message) use ($mailto, $recipient) {
@@ -112,9 +113,11 @@ class UserController extends Controller
         });
     }
 
-    public function activate(Request $request) {
+    public function activate() {
+        $email = responseBuilder::ssl_crypt($_REQUEST['usr'],0);
+
         try {
-            $act = app('db')->table('tbl_user')->where('user_email', $request->user)->update(['user_active' => 1]);
+            $act = app('db')->table('tbl_user')->where('user_email', $email)->update(['user_active' => 1]);
             if($act < 1) {
                 $msg = "User Not Found !";
             }
@@ -130,48 +133,14 @@ class UserController extends Controller
         }
     }
 
-    /*
-    public function getOTP(Request $request)
-    {
-        if(!$request->has('phno')) {
-            return parent::response(400, 'Bad Request');
-        }
+    public function getProfile(Request $request) {
+        // var_dump(openssl_get_cipher_methods());
+        // exit();
+        $encrypt = ResponseBuilder::ssl_crypt('asd', 1);
+        $decrypt = ResponseBuilder::ssl_crypt($encrypt, 0);
 
-        $otp =  (string)mt_rand(100000, 999999);
-        $key = str_random(1).''.md5(date('d-m-Y H:i:s')).''.str_random(1);
-
-        $check = app('db')->select("SELECT COUNT(*) AS data FROM tbl_auth WHERE auth_phno = '".$request->phno."'");
-        if($check[0]->data == 0) {
-            $row = app('db')->insert("INSERT INTO tbl_auth (auth_phno, auth_token, auth_otp, auth_crdt) VALUES (?, ?, ?, ?)", array($request->phno, $key, $otp, date('Y-m-d H:i:s')));
-        }
-        else {
-            $row = app('db')->update("UPDATE tbl_auth SET auth_token = '".$key."', auth_otp = '".$otp."', auth_chdt = '".date('Y-m-d H:i:s')."' WHERE auth_phno = ?", array($request->phno));
-        }
-
-        $data = array(
-            'OTP' => $otp,
-            'key' => $key
-        );
-
-        return parent::response(200,'success','',$data);
+        echo $decrypt;
+        // $encrypt = openssl_encrypt('aaa', 'AES-256-CBC', '53cr3t', 0, '1234567890123456');
+        // echo openssl_decrypt($encrypt, 'AES-256-CBC', '53cr3t', 0, '1234567890123456');
     }
-
-    public function verificationOTP(Request $request)
-    {
-        $header = apache_request_headers();
-        if(!isset($header['Token']) || empty($header['Token'])) {
-            return parent::response(400, 'Bad Request', 'Token is required !');
-        }
-        else if(!$request->has('otp')) {
-            return parent::response(400, 'Bad Request', 'OTP is required !');
-        }
-        
-        $data = app('db')->select("SELECT * FROM tbl_auth WHERE auth_OTP = '".$request->otp."' AND auth_token = '".$header['Token']."' ");
-        if(empty($data)) {
-            return parent::response('200', 'success', 'Token or OTP is not valid !', array('phno' => '', 'verified' => false));
-        }
-
-        return parent::response('200', 'success', '', array('phno' => $data[0]->auth_phno, 'verified' => true));
-    }
-    */
 }
