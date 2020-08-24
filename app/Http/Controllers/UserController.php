@@ -5,7 +5,9 @@ use Exception;
 use Illuminate\Support\Facades\Mail;
 use App\User;
 use App\Http\Helper\ResponseBuilder;
+use App\Models\User_Model;
 use Illuminate\Http\Request;
+use DB;
 
 class UserController extends Controller
 {
@@ -42,13 +44,7 @@ class UserController extends Controller
 
         $msg = "";
         $data = array(
-            'profile' => array(
-                'email' => $row[0]->user_email,
-                'name' => $row[0]->user_name,
-                'gender'=> $row[0]->user_gender,
-                'dob'=> $row[0]->user_dob,
-                'address' => $row[0]->user_address
-            ),
+            'profile' => User_Model::get_profile($row[0]->user_id),
             'token' => $token
         );
         return responseBuilder::response(200, 'success', $msg, $data);
@@ -134,13 +130,70 @@ class UserController extends Controller
     }
 
     public function getProfile(Request $request) {
-        // var_dump(openssl_get_cipher_methods());
-        // exit();
-        $encrypt = ResponseBuilder::ssl_crypt('asd', 1);
-        $decrypt = ResponseBuilder::ssl_crypt($encrypt, 0);
+        $bearer = ($request->headers->all('authorization'));
+        if(empty($bearer)) return ResponseBuilder::response('401', 'Unauthorized', 'Token is required !');
 
-        echo $decrypt;
-        // $encrypt = openssl_encrypt('aaa', 'AES-256-CBC', '53cr3t', 0, '1234567890123456');
-        // echo openssl_decrypt($encrypt, 'AES-256-CBC', '53cr3t', 0, '1234567890123456');
+        $bearer = substr($bearer[0], (strpos($bearer[0], ' ')+1), strlen($bearer[0]));
+
+        $row = User_Model::where('user_mobile_token', $bearer)->first();
+        if(empty($row)) {
+            return ResponseBuilder::response('401', 'Unauthorized', 'Token Expired !', '');
+        }
+
+        $code = 200;
+        $status = 'success';
+        $msg = '';
+        $data = array(
+            'profile' => User_Model::get_profile($row->user_id)
+        );
+
+        return ResponseBuilder::response($code, $status, $msg, $data);
+    }
+
+    public function updateProfile(Request $request) {
+        $bearer = ($request->headers->all('authorization'));
+        if(empty($bearer)) return ResponseBuilder::response('401', 'Unauthorized', 'Token is required !');
+
+        $bearer = substr($bearer[0], (strpos($bearer[0], ' ')+1), strlen($bearer[0]));
+        $row = User_Model::where('user_mobile_token', $bearer)->first();
+        if(empty($row)) {
+            return ResponseBuilder::response('401', 'Unauthorized', 'Token Expired !', '');
+        }
+
+        try{
+            $gender = empty($request->gender) ? $row->user_gender : $request->gender;
+            $dob = empty($request->dob) ? $row->user_dob : $request->dob;
+            $profname = empty($request->profname) ? $row->user_profilename : $request->profname;
+            $phno = empty($request->phno) ? $row->user_phno : $request->phno;
+            $weight = empty($request->weight) ? $row->user_weight : $request->weight;
+            $height = empty($request->height) ? $row->user_height : $request->height;
+
+            $code = 200;
+            $status = 'success';
+            $act = User_Model::where('user_id', $row->user_id)->update([
+                'user_gender' => $gender,
+                'user_dob' => $dob,
+                'user_profilename' => $profname,
+                'user_phno' => $phno,
+                'user_weight' => $weight,
+                'user_height' => $height
+            ]);
+            
+            if(!$act) {
+                $msg = "Update profile failed, user not found";
+            }
+            else {
+                $msg = "Profile updated !";
+            }
+        }
+        catch(\Illuminate\Database\QueryException $ex) {
+            $code = 500;
+            $status = 'Internal server error';
+            $msg = $ex->getMessage();
+        }
+        finally {
+            $data = User_Model::get_profile($row->user_id);
+            return ResponseBuilder::response($code, $status, $msg, $data);
+        }
     }
 }

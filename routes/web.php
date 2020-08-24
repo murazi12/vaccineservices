@@ -19,7 +19,10 @@ $router->get('/test', function () use ($router) {
     return 'test';
 });
 
+$router->get('/activate', array('uses' => 'UserController@activate'));
+
 $router->post('/login', array('uses' => 'UserController@login'));
 $router->post('/register', array('uses' => 'UserController@register'));
-$router->get('/activate', array('uses' => 'UserController@activate'));
 $router->post('/profile', array('uses' => 'UserController@getProfile'));
+$router->post('/updateProfile', array('uses' => 'UserController@updateProfile'));
+// $router->get('/token', array('user' => 'UserController@checkToken'));

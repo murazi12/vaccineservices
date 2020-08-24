@@ -29,9 +29,5 @@ class ResponseBuilder {
 
         return $crypt;
     }
-
-    public static function ssl_decrypt($str) {
-
-    }
 }
 ?>
