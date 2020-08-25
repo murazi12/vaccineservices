@@ -66,7 +66,8 @@ class UserController extends Controller
 
         $check = app('db')->select("SELECT * FROM tbl_user WHERE user_email = '".$request->email."' OR user_name = '".$request->username."'");
         if(count($check) > 0) {
-            return ResponseBuilder::response(500, 'Internal Server Error', 'Email / username has been registered !');
+            $data = array('registered' => false);
+            return ResponseBuilder::response(500, 'Internal Server Error', 'Email / username has been registered !', $data);
         }
 
         $email = strtolower($request->email);
