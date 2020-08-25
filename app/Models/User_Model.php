@@ -31,7 +31,8 @@ class User_Model extends Model
             'weight'    => $data->user_weight,
             'height'    => $data->user_height,
             'phone'     => $data->user_phno,
-            'avatar'    => $data->user_avatar
+            'avatar'    => $data->user_avatar,
+            'address'   => $data->user_address
         );
 
         return $return;

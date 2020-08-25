@@ -25,4 +25,4 @@ $router->post('/login', array('uses' => 'UserController@login'));
 $router->post('/register', array('uses' => 'UserController@register'));
 $router->post('/profile', array('uses' => 'UserController@getProfile'));
 $router->post('/updateProfile', array('uses' => 'UserController@updateProfile'));
-// $router->get('/token', array('user' => 'UserController@checkToken'));
+$router->post('/updateAvatar', array('uses' => 'UserController@updateAvatar'));

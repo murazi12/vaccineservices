@@ -197,4 +197,37 @@ class UserController extends Controller
             return ResponseBuilder::response($code, $status, $msg, $data);
         }
     }
+
+    public function updateAvatar(Request $request) {
+        $bearer = ($request->headers->all('authorization'));
+        if(empty($bearer)) return ResponseBuilder::response('401', 'Unauthorized', 'Token is required !');
+
+        $bearer = substr($bearer[0], (strpos($bearer[0], ' ')+1), strlen($bearer[0]));
+        $row = User_Model::where('user_mobile_token', $bearer)->first();
+        if(empty($row)) {
+            return ResponseBuilder::response('401', 'Unauthorized', 'Token Expired !', '');
+        }
+
+        try {
+            $avatar = empty($request->avatar) ? $row->user_avatar : $request->avatar;
+
+            $code = 200;
+            $status = 'success';
+            $msg = '';
+            $act = User_Model::where('user_id', $row->user_id)->update([
+                'user_avatar' => $avatar
+            ]);
+        }
+        catch(\Illuminate\Database\QueryException $ex) {
+            $code = 500;
+            $status = 'Internal server error';
+            $msg = $ex->getMessage();
+        }
+        finally {
+            $data = array(
+                'avatar' => User_Model::where('user_id', $row->user_id)->first()->user_avatar
+            );
+            return ResponseBuilder::response($code, $status, $msg, $data);
+        }
+    }
 }
