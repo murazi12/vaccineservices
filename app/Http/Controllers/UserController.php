@@ -111,8 +111,10 @@ class UserController extends Controller
     }
 
     public function activate() {
-        $email = responseBuilder::ssl_crypt($_REQUEST['usr'],0);
+        $url = parse_url($_SERVER['REQUEST_URI']);
+        $usr = substr($url['query'],(strpos($url['query'], '=')+1),strlen($url['query']));
 
+        $email = responseBuilder::ssl_crypt($usr,0);
         try {
             $act = app('db')->table('tbl_user')->where('user_email', $email)->update(['user_active' => 1]);
             if($act < 1) {
@@ -132,13 +134,13 @@ class UserController extends Controller
 
     public function getProfile(Request $request) {
         $bearer = ($request->headers->all('authorization'));
-        if(empty($bearer)) return ResponseBuilder::response('401', 'Unauthorized', 'Token is required !');
+        if(empty($bearer)) return ResponseBuilder::response(401, 'Unauthorized', 'Token is required !');
 
         $bearer = substr($bearer[0], (strpos($bearer[0], ' ')+1), strlen($bearer[0]));
 
         $row = User_Model::where('user_mobile_token', $bearer)->first();
         if(empty($row)) {
-            return ResponseBuilder::response('401', 'Unauthorized', 'Token Expired !', '');
+            return ResponseBuilder::response(401, 'Unauthorized', 'Token Expired !', '');
         }
 
         $code = 200;
