@@ -29,3 +29,5 @@ $router->post('/updateAvatar', array('uses' => 'UserController@updateAvatar'));
 
 $router->post('/province', array('uses' => 'ProvinceController@provinceList'));
 $router->post('/city', array('uses' => 'CityController@cityList'));
+
+$router->post('/hospital', array('uses' => 'HospitalController@hospitalList'));
