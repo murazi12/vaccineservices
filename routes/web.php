@@ -28,3 +28,4 @@ $router->post('/updateProfile', array('uses' => 'UserController@updateProfile'))
 $router->post('/updateAvatar', array('uses' => 'UserController@updateAvatar'));
 
 $router->post('/province', array('uses' => 'ProvinceController@provinceList'));
+$router->post('/city', array('uses' => 'CityController@cityList'));
