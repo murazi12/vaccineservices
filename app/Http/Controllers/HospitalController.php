@@ -30,14 +30,14 @@ class HospitalController extends Controller
         if(empty($request->cit_id)) return ResponseBuilder::response(400, 'Bad Request', 'City is required !');
 
         $data = array();
-        $rows = Hospital_Model::where('hos_active', 1)->get();
+        $rows = Hospital_Model::where('hos_active', 1)->where('hos_province_id', $request->prov_id)->get();
         foreach($rows as $row) {
             $data['hospital'][] = array(
                 'id'        => $row->hos_id,
                 'name'      => $row->hos_name,
-                'addess'    => $row->hos_address,
+                'address'    => $row->hos_address,
                 'pict'      => $row->hos_pict,
-                'remark'     => $row->hos_remark
+                'remark'    => $row->hos_remark
             );
         }
         return ResponseBuilder::response(200, 'success', '', $data);
